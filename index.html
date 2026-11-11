@@ -851,16 +851,21 @@ document.getElementById("sh-copy").addEventListener("click", () => {
     mongol:   { coat: "#2f6f8f", skirt: "#285f7b", belt: "#e2992b", pants: "#5a3a22", hat: "fur", weapon: "bow", collar: "#e2992b" },
     imperial: { coat: "#e7e2d2", skirt: "#d6cfbb", belt: "#6b4423", pants: "#c9c0aa", hat: "felt", weapon: "musket", cuffs: "#b52027", cross: "#6b4423" },
     ottoman:  { coat: "#2d4f9c", skirt: "#2d4f9c", belt: "#c0392b", pants: "#c0392b", hat: "bork", weapon: "scimitar", collar: GOLD },
-    acr:      { coat: "#56703c", skirt: "#56703c", belt: "#3b4a28", pants: "#4f6837", hat: "helmet", weapon: "rifle", camo: true }
+    acr:      { coat: "#56703c", skirt: "#56703c", belt: "#3b4a28", pants: "#4f6837", hat: "helmet", weapon: "rifle", camo: true },
+    raider:   { coat: "#6e604c", skirt: "#5d5140", belt: "#3b3127", pants: "#4b4239", hat: "hair", weapon: "torch", dirty: true, rags: true }
   };
   function hat(P, h) {
     if (h === "nasal") { P(7, 1, 2, 1, STEEL); P(6, 2, 4, 1, STEEL); P(5, 3, 6, 2, STEEL); P(5, 4, 6, 1, STEEL2); P(9, 5, 1, 2, STEEL2); P(5, 5, 1, 4, "#8d949d"); P(6, 2, 1, 1, LIGHT); }
     if (h === "fur") { P(6, 1, 4, 2, "#9b1f1f"); P(7, 0, 2, 1, "#9b1f1f"); P(5, 3, 6, 2, "#7a5532"); P(5, 5, 1, 3, "#7a5532"); P(6, 3, 1, 1, "#a57c52"); }
     if (h === "bork") { P(6, 0, 4, 5, "#f2eee3"); P(4, 1, 2, 7, "#e3dccb"); P(6, 4, 4, 1, GOLD); }
     if (h === "felt") { P(6, 2, 4, 2, "#262626"); P(4, 4, 8, 1, "#1c1c1c"); P(5, 1, 1, 2, "#b52027"); }
+    if (h === "hair") { P(5, 3, 6, 2, "#4e3b28"); P(5, 5, 1, 2, "#4e3b28"); P(7, 2, 2, 1, "#4e3b28"); }
     if (h === "helmet") { P(6, 2, 4, 1, "#4b5e33"); P(5, 3, 6, 2, "#4b5e33"); P(4, 5, 8, 1, "#3c4b28"); P(6, 3, 1, 1, "#3e5229"); P(9, 4, 1, 1, "#6b7f4a"); }
   }
-  function weapon(P, w) {
+  function weapon(P, w, fr) {
+    if (w === "torch") { P(12, 6, 1, 9, "#6b4423");
+      if (fr === 0) { P(11, 3, 3, 3, "#e8661c"); P(12, 1, 1, 2, "#e8661c"); P(12, 4, 1, 2, "#ffd23f"); }
+      else { P(11, 2, 3, 4, "#d6461a"); P(13, 1, 1, 1, "#e8661c"); P(12, 3, 1, 2, "#ffd23f"); } }
     if (w === "sword") { P(12, 4, 1, 9, LIGHT); P(11, 12, 3, 1, "#c9a227"); P(12, 13, 1, 2, "#5b3a1b"); }
     if (w === "bow") { P(13, 8, 1, 8, "#7a4a22"); P(12, 7, 1, 1, "#7a4a22"); P(12, 16, 1, 1, "#7a4a22"); P(12, 8, 1, 8, "#e8e2d0"); }
     if (w === "scimitar") { P(12, 9, 1, 4, LIGHT); P(13, 7, 1, 3, LIGHT); P(14, 6, 1, 1, LIGHT); P(11, 13, 3, 1, GOLD); P(12, 14, 1, 1, "#5b3a1b"); }
@@ -882,7 +887,9 @@ document.getElementById("sh-copy").addEventListener("click", () => {
       if (L.cuffs) { P(4, 13, 1, 1, L.cuffs); P(11, 13, 1, 1, L.cuffs); }
       P(4, 14, 1, 1, SKIN); P(11, 14, 1, 1, SKIN);
       P(6, 5, 4, 5, SKIN); P(9, 7, 1, 1, "#222"); P(6, 9, 4, 1, "#e0a873");
-      hat(P, L.hat); weapon(P, L.weapon);
+      if (L.dirty) { P(6, 6, 1, 1, "#c79a70"); P(8, 8, 1, 1, "#b88b62"); P(6, 9, 4, 1, "#8f7154"); P(7, 12, 1, 1, "#4a3f33"); P(9, 11, 1, 1, "#85775e"); }
+      if (L.rags) { P(4, 15, 1, 1, 0); P(7, 15, 1, 1, 0); P(11, 15, 1, 1, 0); P(10, 14, 1, 1, "#8a7b5f"); P(5, 11, 1, 1, "#85775e"); P(6, 18, 1, 1, "#6b5f50"); }
+      hat(P, L.hat); weapon(P, L.weapon, fr);
       if (L.shield) { P(1, 9, 4, 6, "#b52027"); P(2, 15, 2, 1, "#b52027"); P(2, 11, 2, 2, "#ececec"); P(1, 9, 4, 1, GOLD); }
     });
   }
@@ -953,8 +960,14 @@ document.getElementById("sh-copy").addEventListener("click", () => {
     try {
       if (!AC) {
         AC = new (window.AudioContext || window.webkitAudioContext)();
-        const comp = AC.createDynamicsCompressor(); comp.connect(AC.destination);
-        master = AC.createGain(); master.gain.value = 0.22; master.connect(comp);
+        const comp = AC.createDynamicsCompressor(); comp.threshold.value = -18; comp.connect(AC.destination);
+        AC._comp = comp;
+        master = AC.createGain(); master.gain.value = 0.2; master.connect(comp);
+        // jemný dozvuk (jako venku na nádvoří), generovaný – žádný soubor
+        const len = AC.sampleRate * 2.2, ir = AC.createBuffer(2, len, AC.sampleRate);
+        for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
+        const rev = AC.createConvolver(), wet = AC.createGain(); rev.buffer = ir; wet.gain.value = .28;
+        AC._rev = rev; master.connect(rev); rev.connect(wet); wet.connect(comp);
       }
       if (AC.state === "suspended") AC.resume();
     } catch (e) { AC = null; }
@@ -967,29 +980,46 @@ document.getElementById("sh-copy").addEventListener("click", () => {
     return 440 * Math.pow(2, (midi - 69) / 12);
   }
   function parseTune(s) { return s.trim().split(/\s+/).map(t => { const [n, d] = t.split("/"); return [n, +d]; }); }
-  function tuneLength(tune) { return parseTune(tune.notes).reduce((a, [, d]) => a + d, 0) * 60 / tune.bpm; }
-  function tone(f, t0, dur, voice) {
-    const a = AC, g = a.createGain(), lp = a.createBiquadFilter();
-    lp.type = "lowpass"; lp.Q.value = 1.2;
-    const oscs = [];
-    const add = (type, mul, gain, det = 0) => { const o = a.createOscillator(), og = a.createGain(); o.type = type; o.frequency.value = f * mul; o.detune.value = det; og.gain.value = gain; o.connect(og); og.connect(lp); oscs.push(o); };
-    if (voice === "horn") { add("triangle", 1, .9); add("sawtooth", 1, .18, 4); add("sine", 2, .12); lp.frequency.setValueAtTime(1300, t0); }
-    else { add("sawtooth", 1, .55); add("sawtooth", 1, .45, 7); add("square", .5, .12);
-      lp.frequency.setValueAtTime(600, t0); lp.frequency.linearRampToValueAtTime(2600, t0 + .05); lp.frequency.linearRampToValueAtTime(1700, t0 + .25); }
+  function tuneLength(tune) { return parseTune(tune.notes).reduce((a, [, d]) => a + d, 0) * 60 / tune.bpm + 1.2; }
+  // jeden tón: „trubka“ (zvonivější) nebo „lesní roh“ (měkký, kulatý), s jemným vibratem
+  function tone(f, t0, dur, voice, vel = 1) {
+    const a = AC, g = a.createGain(), lp = a.createBiquadFilter(), oscs = [];
+    lp.type = "lowpass"; lp.Q.value = .7;
+    const vib = a.createOscillator(), vibG = a.createGain();
+    vib.frequency.value = 5.2; vibG.gain.setValueAtTime(0, t0);
+    if (dur > .45) vibG.gain.linearRampToValueAtTime(5, t0 + Math.min(.5, dur * .6));
+    vib.connect(vibG);
+    const add = (type, mul, gain, det = 0) => { const o = a.createOscillator(), og = a.createGain(); o.type = type; o.frequency.value = f * mul; o.detune.value = det; vibG.connect(o.detune); og.gain.value = gain; o.connect(og); og.connect(lp); oscs.push(o); };
+    let peak, sus;
+    if (voice === "horn") {
+      add("triangle", 1, .8); add("sawtooth", 1, .16, 3); add("sine", 2, .1);
+      lp.frequency.setValueAtTime(700, t0); lp.frequency.linearRampToValueAtTime(1500, t0 + .08); lp.frequency.linearRampToValueAtTime(1100, t0 + .35);
+      peak = .95; sus = .8;
+    } else {
+      add("sawtooth", 1, .42); add("sawtooth", 1, .32, 6); add("triangle", 1, .35);
+      lp.frequency.setValueAtTime(450, t0); lp.frequency.linearRampToValueAtTime(2300, t0 + .045); lp.frequency.linearRampToValueAtTime(1500, t0 + .3);
+      peak = .9; sus = .7;
+    }
     lp.connect(g); g.connect(master);
-    const end = t0 + dur;
-    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(1, t0 + .035); g.gain.linearRampToValueAtTime(.72, t0 + .18);
-    g.gain.setValueAtTime(.72, Math.max(t0 + .18, end - .07)); g.gain.linearRampToValueAtTime(0, end);
+    const end = t0 + dur, att = Math.min(.04, dur * .3);
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(peak * vel, t0 + att);
+    g.gain.linearRampToValueAtTime(sus * vel, t0 + Math.min(dur * .5, .2));
+    g.gain.setValueAtTime(sus * vel, Math.max(t0 + Math.min(dur * .5, .2), end - .06)); g.gain.linearRampToValueAtTime(0, end);
+    vib.start(t0); vib.stop(end + .05);
     oscs.forEach(o => { o.start(t0); o.stop(end + .05); });
   }
   function playTune(tune) {
     const len = tuneLength(tune);
     if (muted || !audio()) return len;
-    let t = AC.currentTime + .08; const beat = 60 / tune.bpm;
-    for (const [n, d] of parseTune(tune.notes)) {
-      if (n !== "R") tone(hz(n), t, d * beat * .94, tune.voice);
+    let t = AC.currentTime + .1; const beat = 60 / tune.bpm;
+    const notes = parseTune(tune.notes);
+    notes.forEach(([n, d], i) => {
+      if (n !== "R") {
+        const next = notes[i + 1], same = next && next[0] === n, chord = n.split("+");
+        chord.forEach(p => tone(hz(p), t, d * beat * (same ? .82 : .96), tune.voice, (d < .3 ? .8 : 1) / Math.sqrt(chord.length)));
+      }
       t += d * beat;
-    }
+    });
     return len;
   }
   function blip(f = 880, d = .09, type = "square", v = .5) {
@@ -1008,15 +1038,27 @@ document.getElementById("sh-copy").addEventListener("click", () => {
     s.connect(bp); bp.connect(g); g.connect(master); s.start(t);
   }
 
-  /* Melodie (zápis: tón/doby). Přepis zpaměti – snadno opravitelné. */
+  /* Melodie (zápis: tón/doby), přepsané z not */
   const TUNES = {
-    // fanfára z Libuše (Prezidentská fanfára)
-    fanfara: { bpm: 96, voice: "brass", notes: "G4/0.5 C5/0.5 E5/0.5 G5/1.5 E5/0.5 G5/0.5 C6/2 R/0.5 G5/0.5 A5/0.5 G5/0.5 E5/0.5 G5/0.5 C6/0.75 C6/0.25 C6/2" },
-    // Svatováclavský chorál – úvod a refrén „Kriste eleison“
-    choral: { bpm: 66, voice: "brass", notes: "D4/1 D4/1 C4/1 D4/1 F4/1 E4/1 D4/2 F4/1 G4/1 A4/1 G4/1 F4/1 E4/1 D4/2 R/0.5 F4/1 E4/1 D4/1 C4/1 D4/1 D4/2" },
-    // Kde domov můj
-    hymna: { bpm: 63, voice: "horn", notes: "E4/1.5 F4/0.5 G4/1 E4/1 D4/1.5 E4/0.5 F4/1 D4/1 C4/0.5 E4/0.5 G4/0.5 G4/0.5 A4/0.5 G4/0.5 F4/0.5 E4/0.5 D4/0.5 F4/0.5 A4/0.5 A4/0.5 B4/0.5 A4/0.5 G4/0.5 F4/0.5 E5/1 D5/0.5 C5/0.5 B4/1 A4/1 G4/1 A4/0.5 B4/0.5 C5/2 E5/0.5 E5/0.5 D5/0.5 C5/0.5 C5/0.5 B4/0.5 A4/1 G4/0.5 A4/0.5 B4/0.5 C5/0.5 E4/1 D4/1 C4/2" }
+    // Fanfára z Libuše (B. Smetana) – úsek z nahrávky cca 0:20–0:33, vyvrcholí velkým akordem (takty 5–9)
+    fanfara: { bpm: 69, voice: "brass", notes:
+      "G4/0.5 C5/0.5 G4/0.75 E4/0.25 " +
+      "A4/2 B4/1.5 C5/0.5 B4/2 B4/0.75 B4/0.125 B4/0.125 B4/0.333 B4/0.333 B4/0.334 " +
+      "A4/2 B4/1.5 C5/0.5 B4+G#4+E4+E3/4.5" },
+    // Svatováclavský chorál – „Svatý Václave, vévodo české země … Kyrie eleison“ (Kancionál 830)
+    choral: { bpm: 80, voice: "brass", notes:
+      "A4/1 B4/1 G4/1 C5/1 B4/1 G4/1 A4/2 R/0.5 A4/1 B4/1 G4/1 C5/1 B4/1 A4/1 F4/1 E4/2 R/0.5 " +
+      "F4/1 E4/1 D4/1 D4/1 C4/2 D4/4" },
+    // Kde domov můj (F. Škroup) – E dur, Andante con moto
+    hymna: { bpm: 80, voice: "horn", notes:
+      "B4/2 C#5/0.5 B4/0.5 F#4/1 A4/2 G#4/0.5 F#4/0.5 E4/2 R/1 E4/0.5 E4/0.5 " +
+      "E4/0.75 A4/0.25 A4/2 B4/0.5 C#5/0.5 B4/0.5 G#4/0.5 E4/1 R/1 E4/0.5 E4/0.5 " +
+      "E4/0.5 A4/0.5 B4/0.5 C#5/0.5 E5/1 D#5/0.5 C#5/0.5 C#5/1 B4/1 R/1 B4/0.5 B4/0.5 " +
+      "B4/2.5 C#5/0.5 B4/0.5 A4/0.5 G#4/2 R/1 B4/0.5 B4/0.5 D#5/2.5 C#5/0.5 B4/0.5 A4/0.5 " +
+      "G#4/2 R/1 G#4/0.5 G#4/0.5 G#4/1.5 G#4/0.5 G#4/1 A#4/0.5 B#4/0.5 B#4/0.5 C#5/0.5 C#5/1 R/1 C#5/0.5 C#5/0.5 " +
+      "C#5/0.5 B4/0.5 B4/2 A4/0.5 B4/0.5 G#4/1 E5/2 D#5/0.5 C#5/0.5 C#5/1 B4/2 F#4/0.5 G#4/0.5 E4/3" }
   };
+
 
   /* ---------- Místa v ilustraci ---------- */
   const HILL = [[560, 330], [700, 262], [820, 195], [930, 150], [1040, 136], [1170, 142], [1280, 200], [1400, 255], [1530, 300], [1700, 370], [1700, 415], [560, 415]];
@@ -1043,7 +1085,7 @@ document.getElementById("sh-copy").addEventListener("click", () => {
       const hw = 12 + 34 * Math.max(0, Math.min(1, (y - 490) / 222));
       if (segDist(x, y, PATH[i], PATH[i + 1]) < hw + 8) return "cesta";
     }
-    if (inPoly(x, y, HILL)) return "rip";
+    if (inPoly(x, y, HILL) || (x >= ROT[0] - 12 && x <= ROT[2] + 12 && y >= ROT[1] - 14 && y <= ROT[3] + 10)) return "rip";
     return null;
   }
 
@@ -1067,15 +1109,17 @@ document.getElementById("sh-copy").addEventListener("click", () => {
     }
   }
   function carFx() {
-    const music = playTune(TUNES.fanfara), drive = 6.5, end = Math.max(drive + 1, music) + 1.2;
+    // auto jede pomalu a důstojně, zastaví s posledním tónem fanfáry
+    const music = playTune(TUNES.fanfara), drive = Math.max(8, music - 1.7), end = music + 1.6;
+    const soft = x => .5 - .5 * Math.cos(Math.PI * x);
     let t = 0;
     return {
       egg: "cesta",
       update(dt) { t += dt; return t < end; },
       draw() {
-        const p = along(ease(Math.min(1, t / drive)));
-        const sc = 3.6 * (0.42 + 0.58 * Math.max(0, Math.min(1, (p.y - 490) / 222)));
-        const moving = t < drive, fr = moving ? (t * 9 | 0) % 2 : 0;
+        const p = along(soft(Math.min(1, t / drive)));
+        const sc = 4.7 * (0.42 + 0.58 * Math.max(0, Math.min(1, (p.y - 490) / 222)));
+        const moving = t < drive, fr = moving ? (t * 4 | 0) % 2 : 0;
         const img = sprites().car[(p.dx >= 0 ? 0 : 2) + fr];
         blit(img, p.x, p.y + 4 * sc, sc, t > end - 1.2 ? (end - t) / 1.2 : 1);
       }
@@ -1171,9 +1215,9 @@ document.getElementById("sh-copy").addEventListener("click", () => {
     sparkle(x, y); kick();
     const now = performance.now();
     // rychle po sobě Říp → cesta → domečky = rovnou minihra
-    seq = seq.filter(s => now - s.t < 1600); seq.push({ z, t: now });
-    const last3 = seq.slice(-3).map(s => s.z).join(">");
-    if (last3 === "rip>cesta>domy") { seq = []; startGame(); return; }
+    // po jednom klepnutí na Říp/rotundu, cestu a domy (v libovolném pořadí, do 2,5 s) = rovnou minihra
+    seq = seq.filter(s => now - s.t < 2500); seq.push({ z, t: now });
+    if (new Set(seq.map(s => s.z)).size === 3) { seq = []; startGame(); return; }
     // pět klepnutí na stejné místo = překvapení
     const c = counts[z]; c.push(now); while (c.length && now - c[0] > 4000) c.shift();
     if (c.length >= 5) { c.length = 0; const mk = z === "cesta" ? carFx : z === "rip" ? ripFx : flagFx;
@@ -1182,9 +1226,9 @@ document.getElementById("sh-copy").addEventListener("click", () => {
 
   /* ---------- Minihra ---------- */
   const LEVELS = [
-    { hero: "knight", foe: "mongol", goal: 10, every: 1.7, speed: 42, hits: 3, title: "Přemyslovský rytíř proti Mongolům" },
-    { hero: "imperial", foe: "ottoman", goal: 15, every: 1.2, speed: 54, hits: 3, title: "Císařský voják proti osmanským Turkům" },
-    { hero: "acr", foe: "drone", goal: 0, every: 1.05, speed: 64, hits: 2, title: "Voják AČR proti útočným dronům" }
+    { hero: "knight", foe: "mongol", goal: 10, every: 1.7, speed: 82, hits: 3, title: "Přemyslovský rytíř proti Mongolům" },
+    { hero: "imperial", foe: "ottoman", goal: 15, every: 1.2, speed: 102, hits: 3, title: "Císařský voják proti osmanským Turkům" },
+    { hero: "acr", foe: "raider", goal: 100, every: .9, speed: 147, hits: 2, title: "Voják AČR proti otrhaným žhářům" }
   ];
   let G = null;
   const keys = new Set();
@@ -1200,9 +1244,16 @@ document.getElementById("sh-copy").addEventListener("click", () => {
   }
   const hideMsg = () => { msgEl.hidden = true; };
 
+  // utlumí rozehranou melodii a zruší běžící překvapení
+  function silence() {
+    fx.length = 0; queue.length = 0; busy = false;
+    if (!AC || !master) return;
+    const old = master; old.gain.setTargetAtTime(0, AC.currentTime, .05); setTimeout(() => old.disconnect(), 500);
+    master = AC.createGain(); master.gain.value = 0.2; master.connect(AC._comp); master.connect(AC._rev);
+  }
   function startGame() {
     if (G) return;
-    audio();
+    audio(); silence();
     banner.classList.add("game"); ui.hidden = false;
     focusX = 1; focusY = .5; layout();
     const top = banner.getBoundingClientRect().top + scrollY - (document.querySelector("header.top")?.offsetHeight || 0);
@@ -1217,13 +1268,19 @@ document.getElementById("sh-copy").addEventListener("click", () => {
       .map(b => ({ b, hp: 0, burnT: 0 }));
     const h = G.hero; h.x = h.tx = view.x0 + (view.x1 - view.x0) * .62; h.y = h.ty = Math.min(view.y1 - 30, 640);
     const narrow = innerWidth < innerHeight;
-    showMsg(`Úroveň ${i + 1}`, L.title + (L.goal ? ` · chyť ${L.goal} nájezdníků` : " · vydrž co nejdéle") + (narrow && i === 0 ? " · na šířku se hraje lépe" : ""));
+    showMsg(`Úroveň ${i + 1}`, `Chyť ${L.goal} nájezdníků` + (narrow && i === 0 ? " · na šířku se hraje lépe" : ""));
   }
   function gameOver() {
     G.over = true;
     if (G.total > best) { best = G.total; try { localStorage.setItem("ubran-domov-best", String(best)); } catch (e) {} }
     blip(220, .5, "sawtooth", .6);
     showMsg("Rotunda padla", `Chyceno nájezdníků: ${G.total} · rekord ${best}`, [["Hrát znovu", () => { G.total = 0; setupLevel(0); }], ["Zavřít", endGame]]);
+  }
+  function victory() {
+    G.over = true; G.foes = [];
+    if (G.total > best) { best = G.total; try { localStorage.setItem("ubran-domov-best", String(best)); } catch (e) {} }
+    [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => blip(f, .22, "triangle", .7), i * 160));
+    showMsg("Domov ubráněn!", `Chyceno nájezdníků: ${G.total}`, [["Hrát znovu", () => { G.total = 0; setupLevel(0); }], ["Zavřít", endGame]]);
   }
   function endGame() {
     G = null; hideMsg(); ui.hidden = true; keys.clear();
@@ -1268,7 +1325,14 @@ document.getElementById("sh-copy").addEventListener("click", () => {
         else { G.rot++; whoosh(); if (G.rot >= 3) { gameOver(); return; } }
         continue;
       }
-      const m = Math.min(1, f.sp * dt / fd); f.x += fdx * m; f.y += fdy * m; f.face = fdx < 0 ? 2 : 0;
+      let vx = fdx / fd * f.sp, vy = fdy / fd * f.sp;
+      if (G.lv === 2) {               // v posledním kole před vojákem uhýbají
+        const ax = f.x - h.x, ay = f.y - h.y, ad = Math.hypot(ax, ay) || 1, w = Math.max(0, 1 - ad / 220);
+        if (w > 0) { const side = f.wob > 3 ? 1 : -1; vx += (ax / ad * .5 - ay / ad * side * .7) * f.sp * 1.4 * w; vy += (ay / ad * .5 + ax / ad * side * .7) * f.sp * 1.4 * w; }
+      }
+      const step = Math.min(fd, Math.hypot(vx, vy) * dt), vl = Math.hypot(vx, vy) || 1;
+      f.x += vx / vl * step; f.y += vy / vl * step;
+      f.y = Math.max(view.y0 + 60, Math.min(view.y1 - 6, f.y)); f.face = vx < 0 ? 2 : 0;
       const P = pxScale(), fcy = f.y - (f.air ? 4 : 11) * P, hcy = h.y - 11 * P;
       if (Math.hypot(f.x - h.x, fcy - hcy) < 12 * P) {
         G.foes.splice(i, 1); G.caught++; G.total++; blip(660 + Math.random() * 300);
@@ -1281,8 +1345,8 @@ document.getElementById("sh-copy").addEventListener("click", () => {
     G.smoke = G.smoke.filter(s => (s.t += dt) < 2.2);
     if (L.goal && G.caught >= L.goal) {
       blip(523, .12); setTimeout(() => blip(784, .2), 130);
+      if (G.lv === 2) { victory(); return; }
       setupLevel(G.lv + 1);
-      if (G.lv === 2) showMsg("Úroveň 3", LEVELS[2].title + " · nekonečná vlna, jde o skóre");
     }
   }
   function flames(x0, x1, yb, n, big) {
@@ -1318,7 +1382,7 @@ document.getElementById("sh-copy").addEventListener("click", () => {
     // panel vlevo dole – nahoře by zakrýval rotundu na Řípu
     const small = banner.clientWidth < 600, fs = small ? 11 : 13, lh = fs + 5;
     const alive = G.b.filter(b => b.hp < L.hits).length;
-    const line1 = `Úroveň ${G.lv + 1}/3 · ` + (L.goal ? `chyceno ${G.caught}/${L.goal}` : `skóre ${G.total} · rekord ${Math.max(best, G.total)}`);
+    const line1 = `Úroveň ${G.lv + 1}/3 · chyceno ${G.caught}/${L.goal}`;
     const line2 = `Stavení ${alive}/${G.b.length} · rotunda ${"♥".repeat(3 - G.rot)}${"·".repeat(G.rot)}`;
     ctx.font = `700 ${fs}px Archivo, Arial, sans-serif`;
     const w = Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width) + 16, hh = lh * 2 + 10;
